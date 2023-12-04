@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.PracticePaperMapper">
+
+    <select id="findPracticedList" resultType="exam.common.vo.PracticedPaperVO">
+        select
+            pp.id AS id,
+            pp.status,
+            pp.start_time,
+            pp.end_time,
+            pp.practice_id AS practiceId,
+            p.name AS practiceName,
+            p.score AS practiceScore,
+            u.id AS userId,
+            u.username,
+            u.real_name
+        from practice_paper pp
+        left join practice p on pp.practice_id = p.id
+        left join user u on pp.stu_id=u.id
+        where
+        pp.status > 2
+            <if test="vo.practiceName != null and vo.practiceName != ''">
+                AND p.name like CONCAT ('%', #{vo.practiceName}, '%')
+            </if>
+            <if test="vo.realName != null and vo.realName != ''">
+                AND u.real_name like CONCAT ('%', #{vo.realName}, '%')
+            </if>
+            <if test="vo.status != null">
+                AND pp.status = #{vo.status}
+            </if>
+        order by pp.start_time desc
+    </select>
+
+    <select id="queryFinishPracticeList" resultType="exam.common.vo.FinishPracticePaperVO">
+        SELECT
+            epp.id as paperId,
+            epp.stu_id as userId,
+            ep.name as practiceName,
+            ep.score as practiceScore,
+            ep.pass_score  as passScore,
+            ep.last_time as lastTime,
+            epp.total_score as stuScore,
+            epp.start_time,
+            epp.end_time,
+            epp.status
+        FROM practice_paper epp
+        join practice ep on epp.practice_id = ep.id
+        where epp.stu_id = #{vo.userId}
+         AND epp.status > 2
+            <if test="vo.practiceName != null and vo.practiceName != ''">
+                AND ep.name like CONCAT ('%', #{vo.practiceName}, '%')
+            </if>
+        order by epp.start_time desc
+    </select>
+
+
+</mapper>

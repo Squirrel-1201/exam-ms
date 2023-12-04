@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.QuestionMapper">
+
+    <sql id="columns">
+        q.id
+        ,q.status,q.question_category_id,q.type,q.title,q.difficulty,q.answer,q.analyse,q.create_time,q.update_time,q.create_by,q.update_by
+    </sql>
+    <select id="findByExamIdAndStuId" resultType="exam.dao.entity.QuestionEntity">
+        select <include refid="columns"/>
+        from question q
+        where EXISTS(select 1
+                     from exam_record e
+                     WHERE e.question_id = q.id AND e.stu_id = #{stuId} AND e.exam_id = #{examId})
+    </select>
+
+    <select id="pageList" resultType="exam.common.vo.QuestionResultVO">
+        SELECT
+	      q.id,
+	      q.create_time,
+	      q.create_by,
+	      q.`status`,
+	      q.type,
+	      q.difficulty,
+	      q.title,
+          q.question_category_id,
+	      c.`name`,
+          ans.error_count,
+          ans.total_count
+        FROM
+	      question q
+        JOIN question_category c ON q.question_category_id = c.id
+        LEFT JOIN answer_statistics ans on q.id = ans.question_id
+
+        <where>
+
+            <if test="vo.title != null">
+              and q.title like concat ('%',#{vo.title},'%')
+            </if>
+            <if test="vo.status != null">
+               and q.status = #{vo.status}
+            </if>
+            <if test="vo.type != null">
+                and q.type = #{vo.type}
+            </if>
+            <if test="vo.difficulty != null">
+                and q.difficulty = #{vo.difficulty}
+            </if>
+            <if test="vo.questionCategoryId != null">
+                and q.question_category_id = #{vo.questionCategoryId}
+            </if>
+        </where>
+        ORDER BY q.update_time DESC
+    </select>
+    
+    <select id="countByCategoryAndType" resultType="exam.common.vo.QuestionCountVO">
+        SELECT question_category_id id, COUNT(1) count,type
+         FROM question
+         group by question_category_id,type
+    </select>
+
+    <select id="duplicateListQuery" resultType="exam.common.vo.QuestionResultVO">
+        SELECT
+        q.id,
+        q.create_time,
+        q.create_by,
+        q.`status`,
+        q.type,
+        q.difficulty,
+        q.title,
+        q.question_category_id,
+        c.`name`,
+        ans.error_count,
+        ans.total_count
+        FROM
+        (select
+        id,
+        create_time,
+        create_by,
+        status,
+        type,
+        difficulty,
+        title,
+        question_category_id,
+        update_time
+        from question
+        where title in
+        (SELECT
+        title
+        from
+        question
+        group by
+        title
+        HAVING COUNT(title)>1)) q
+        JOIN question_category c ON q.question_category_id = c.id
+        LEFT JOIN answer_statistics ans on q.id = ans.question_id
+        <where>
+            <if test="vo.title != null">
+                and q.title like concat ('%',#{vo.title},'%')
+            </if>
+            <if test="vo.status != null">
+                and q.status = #{vo.status}
+            </if>
+            <if test="vo.type != null">
+                and q.type = #{vo.type}
+            </if>
+            <if test="vo.difficulty != null">
+                and q.difficulty = #{vo.difficulty}
+            </if>
+            <if test="vo.questionCategoryId != null">
+                and q.question_category_id = #{vo.questionCategoryId}
+            </if>
+        </where>
+        ORDER BY q.title,q.update_time
+    </select>
+
+    <select id="containsTitle" resultType="java.lang.Integer">
+        select 1 from question where title like concat ('%',#{title},'%') limit 1
+    </select>
+
+    <select id="questionCountByCategory" resultType="exam.common.vo.QuestionCountByCategory">
+        SELECT
+            eq.id AS id,
+            qc.name AS name,
+            COUNT(1) AS count
+        FROM question eq
+        left join question_category qc on eq.question_category_id = qc.id
+        where qc.parent_id = 1
+        AND qc.status = 1
+        GROUP BY eq.question_category_id
+    </select>
+</mapper>

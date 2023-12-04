@@ -1,0 +1,46 @@
+server:
+  port: ${SERVER_PORT:6012}
+# 指定服务名称
+spring:
+  application:
+    name: exam
+    sys-name: 在线考试系统
+  main:
+    allow-bean-definition-overriding: true
+
+# 图片上传大小配置（单位 MB）
+  http:
+    server:
+      upload:
+        maxFileSize: 10
+        maxRequestSize: 20
+
+  # 数据库连接配置
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:172.17.1.231}:${MYSQL_PORT:13306}/${MYSQL_DATABASE:exam}?useUnicode=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+    username: ${MYSQL_USERNAME:gtwx}
+    password: ${MYSQL_PASSWORD:gtwx}
+    hikari:
+      idle-timeout: 50000
+      connection-timeout: 5000
+      minimum-idle: 5
+  cache:
+    type: caffeine
+    caffeine:
+      spec: expireAfterWrite=120s
+
+mybatis-plus:
+  #实体扫描，多个package用逗号或者分号分隔
+  type-aliases-package: exam.dao.entity
+  type-enums-package: exam.common.enums
+  # sql 打印
+  configuration:
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath*:exam/dao/mapper/**/*.xml
+logging:
+  level:
+    root: info
+    exam: info
+    exam.dao.mapper: info

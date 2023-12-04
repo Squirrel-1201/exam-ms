@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.MenuMapper">
+
+    <sql id="menuColumn">
+        m.create_time,m.create_by,m.env,m.icon,m.id,m.menu_name,m.order_num,m.parent_id,m.remark,m.route_id,m.type,m.update_time,m.update_by
+    </sql>
+
+    <select id="findByUserId" resultType="exam.dao.entity.MenuEntity">
+        select
+        <include refid="menuColumn"/>
+        from menu m
+        JOIN role_menu rm on m.id = rm.menu_id
+        JOIN user_role ur on ur.role_id = rm.role_id
+        WHERE ur.user_id = #{userId} order by m.type asc,m.order_num asc
+    </select>
+
+    <select id="findByRoleId" resultType="exam.dao.entity.MenuEntity">
+        select
+        <include refid="menuColumn"/>
+        from menu m
+        JOIN role_menu rm on m.id = rm.menu_id
+        WHERE rm.role_id = #{roleId} order by m.type asc,m.order_num asc
+    </select>
+
+</mapper>

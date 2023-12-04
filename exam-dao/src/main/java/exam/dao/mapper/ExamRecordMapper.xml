@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.ExamRecordMapper">
+
+    <select id="getStuExamQuestion" resultType="exam.common.vo.StuExamQuestionVO">
+        SELECT e.id       AS examId,
+               es.stu_id,
+               q.id       AS questionId,
+               q.type,
+               e.`status` AS examStatus,
+               q.title,
+               q.answer,
+               q.analyse,
+               er.score,
+               er.answer  AS stuAnswer,
+               er.final_score
+        FROM exam_record er
+                 JOIN exam_student es ON er.stu_id = es.stu_id
+            AND er.exam_id = es.exam_id
+                 JOIN question q ON q.id = er.question_id
+                 JOIN exam e ON es.exam_id = e.id
+        WHERE es.stu_id = #{userId}
+          AND e.id = #{examId}
+    </select>
+
+    <insert id="batchSave">
+        insert into exam_record
+        (id,question_id,exam_id,stu_id,type,title,answer,difficulty,analyse,score,final_score,create_time,update_time,create_by,update_by)
+        values
+        <foreach collection="list" item="er" separator=",">
+            (#{er.id},#{er.questionId},#{er.examId},#{er.stuId},#{er.type},#{er.title},#{er.answer},#{er.difficulty},#{er.analyse},#{er.score},#{er.finalScore},#{er.createTime},#{er.updateTime},#{er.createBy},#{er.updateBy})
+        </foreach>
+    </insert>
+
+    <select id="statisticeTotal" resultType="exam.common.vo.ExamStatisticeTotalVO">
+        select
+            er.question_id,
+            difficulty,
+            `type`,
+            title ,
+            COUNT(*) as total,
+            IFNULL(eer.fail,0) as fail ,
+            IFNULL(eer.fail,0) /COUNT(*) *100 as failed
+        FROM exam_record er
+        left join (select question_id, COUNT(*) as fail FROM exam_record temp where answer != stu_answer AND exam_id = #{vo.examId} GROUP BY temp.question_id) eer on er.question_id = eer.question_id
+        where exam_id = #{vo.examId} GROUP BY question_id ORDER BY ${vo.sortName}
+        <choose>
+            <when test="vo.sortType == 0">
+                DESC
+            </when>
+            <otherwise>
+                ASC
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

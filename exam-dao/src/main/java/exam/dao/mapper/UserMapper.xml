@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.UserMapper">
+
+    <select id="getPerms" resultType="string">
+        SELECT r.url
+        FROM resource r
+                 JOIN resource_menu rem ON rem.resource_id = r.id
+                 JOIN role_menu rom ON rom.menu_id = rem.menu_id
+                 JOIN user_role ur ON ur.role_id = rom.role_id
+        WHERE ur.user_id = #{userId}
+    </select>
+
+    <select id="pageList" resultType="exam.common.vo.UserResponseVO">
+        SELECT u.id,u.username,u.real_name,u.status,u.phone,u.address,u.mail,u.login_last,u.create_time,
+        u.org_id,
+        org.path as orgPath,
+        org.name as orgName,
+        GROUP_CONCAT(r.id) AS roleId,
+        GROUP_CONCAT(r.role_name) AS roleName
+        FROM  role r
+        JOIN `user_role` ur on r.id=ur.role_id
+        JOIN `user` u ON ur.user_id = u.id
+        JOIN organization org ON org.id=u.org_id
+
+        <where>
+
+            <if test="vo.username != null">
+                and u.username like concat('%',#{vo.username},'%')
+            </if>
+            <if test="vo.realName != null">
+                and u.real_name like concat ('%',#{vo.realName},'%')
+            </if>
+            <if test="vo.orgId != null">
+                and u.org_id = #{vo.orgId}
+            </if>
+            <if test="vo.roleId != null">
+                and r.id = #{vo.roleId}
+            </if>
+
+        </where>
+        GROUP BY u.id
+        ORDER BY u.update_time DESC
+    </select>
+
+</mapper>

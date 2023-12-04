@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.ExamMapper">
+
+    <sql id="columns">
+        e.id as examId,e.name as examName,e.status as examStatus,e.score as examScore,e.auto_marking,
+        es.id,es.status as examStuStatus,es.start_time,es.end_time,
+        u.id as userId,u.username,u.real_name
+    </sql>
+
+    <select id="getMarkingExamList" resultType="exam.common.vo.ArtificialMarkExamResultVO">
+        select
+        <include refid="columns"/>
+        from exam_student es
+        left join exam e on es.exam_id=e.id
+        left join user u on es.stu_id=u.id
+        <where>
+            <if test="vo.username != null and vo.username != ''">
+                AND u.username like CONCAT ('%', #{vo.username}, '%')
+            </if>
+            <if test="vo.realName != null and vo.realName != ''">
+                AND u.real_name like CONCAT ('%', #{vo.realName}, '%')
+            </if>
+            <if test="vo.examName != null and vo.examName != ''">
+                AND e.name like CONCAT ('%', #{vo.examName}, '%')
+            </if>
+            <if test="vo.examStuStatus != null and vo.examStuStatus.size()>0">
+                AND es.status in
+                <foreach collection="vo.examStuStatus" item="stuStatus" open="(" close=")" separator=",">
+                    #{stuStatus}
+                </foreach>
+            </if>
+            and e.auto_marking = 0
+        </where>
+        order by es.start_time desc
+    </select>
+
+    <select id="getStudentExamList" resultType="exam.common.vo.ArtificialMarkExamResultVO">
+        select
+        <include refid="columns"/>
+        from exam_student es
+        left join exam e on es.exam_id=e.id
+        left join user u on es.stu_id=u.id
+        <where>
+            <if test="vo.username != null and vo.username != ''">
+                AND u.username like CONCAT ('%', #{vo.username}, '%')
+            </if>
+            <if test="vo.realName != null and vo.realName != ''">
+                AND u.real_name like CONCAT ('%', #{vo.realName}, '%')
+            </if>
+            <if test="vo.examName != null and vo.examName != ''">
+                AND e.name like CONCAT ('%', #{vo.examName}, '%')
+            </if>
+
+            <if test="vo.examStatus != null ">
+                AND e.status = #{vo.examStatus}
+            </if>
+            <if test="vo.examStuStatus != null ">
+                AND es.status = #{vo.examStuStatus}
+            </if>
+        </where>
+        order by es.start_time desc
+    </select>
+
+    <select id="recentExamStatistics" resultType="exam.common.vo.RecentExamResultVO">
+        select
+            ee.id,
+            ee.name,
+            temp.total,
+            pass.passCount
+        FROM exam ee
+        left join (select es.exam_id as es_id, count(*) as total from exam_student es group by es.exam_id) temp on ee.id = temp.es_id
+        left join (select es.exam_id as es_id, count(*) as passCount from exam_student es where es.status = 3 group by es.exam_id) pass on ee.id = pass.es_id
+        where ee.status = 3
+        ORDER BY ee.end_time DESC limit 5
+    </select>
+
+</mapper>

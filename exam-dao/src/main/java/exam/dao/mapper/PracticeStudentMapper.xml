@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.PracticeStudentMapper">
+    <select id="selectPracticeList" resultType="exam.common.vo.StudentPracticeVO">
+        select
+            eps.id as id,
+            eps.stu_id as userId,
+            eps.practice_id as practiceId,
+            ep.name as practiceName,
+            ep.score as practiceScore,
+            ep.pass_score as passScore,
+            ep.start_time as startTime,
+            ep.end_time as endTime,
+            ep.last_time as lastTime,
+            ep.times as practiceTimes,
+            eps.used_times as usedTimes,
+            eppStatus.praTotal as practiceTotal
+        from practice_student eps
+        left join practice ep on ep.id = eps.practice_id
+        left join (select twopp.id as practicePaperId,twopp.practice_stu_id as twoppPra,count(1) as praTotal from practice_paper twopp where twopp.status = 1 and twopp.stu_id = #{vo.userId} group by twopp.practice_id) eppStatus on eps.id = eppStatus.twoppPra
+        where eps.stu_id = #{vo.userId}
+        AND ep.status = 1
+        AND ep.end_time &gt; NOW()
+        <if test="vo.practiceName != null and vo.practiceName != ''">
+            AND ep.name like CONCAT(CONCAT('%', #{vo.practiceName}), '%')
+        </if>
+        order by ep.end_time, ep.start_time
+    </select>
+
+</mapper>

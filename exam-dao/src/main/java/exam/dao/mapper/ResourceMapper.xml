@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.ResourceMapper">
+
+    <select id="findByMenuId" resultType="exam.dao.entity.ResourceEntity">
+        select
+            r.id,r.resource_name,r.url,r.login_verify,r.remark,
+        from resource r JOIN resource_menu rm on r.id=rm.resource_id WHERE rm.menu_id=#{menuId}
+    </select>
+
+</mapper>

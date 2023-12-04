@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.RoleMenuMapper">
+
+    <insert id="batchSave">
+        insert into role_menu (id,role_id,menu_id,create_time,update_time,create_by,update_by)
+        values
+        <foreach collection="list" item="menu" separator=",">
+            (#{menu.id},#{menu.roleId},#{menu.menuId},#{menu.createTime},#{menu.updateTime},#{menu.crerateUser},#{menu.updateBy})
+        </foreach>
+    </insert>
+
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.ExamStudentMapper">
+
+    <select id="planList" resultType="exam.common.vo.StudentExamVO">
+        SELECT e.id AS examId,
+        e.`name` AS examName,
+        e.score AS examScore,
+        e.pass_score AS passScore,
+        e.last_time AS lastTime,
+        e.start_time AS startTime,
+        e.end_time AS endTime,
+        es.`status`,
+        IF(DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i') &gt;= DATE_FORMAT(e.start_time, '%Y-%m-%d %H:%i'), 1,
+        0) AS canExam
+        FROM exam_student es
+        JOIN exam e
+        ON es.exam_id = e.id
+        WHERE es.stu_id = #{vo.userId}
+        AND e.status = 1
+        AND es.status in (0, 1)
+        <if test="vo.examName != null and vo.examName != ''">
+            AND e.name like CONCAT(CONCAT('%', #{vo.examName}), '%')
+        </if>
+        ORDER BY es.`status` DESC, es.start_time, es.end_time
+    </select>
+
+
+    <select id="endList" resultType="exam.common.vo.StudentExamVO">
+        SELECT e.id AS examId,
+        e.`name` AS examName,
+        e.score AS examScore,
+        es.total_score AS stuScore,
+        e.pass_score AS passScore,
+        e.last_time AS lastTime,
+        es.start_time AS startStuTime,
+        es.end_time AS endStuTime,
+        es.`status`
+        FROM exam_student es
+        JOIN exam e ON es.exam_id = e.id
+        WHERE es.stu_id = #{vo.userId}
+        AND es.status &gt; 1
+        <if test="vo.examName != null and vo.examName != ''">
+            AND e.name like CONCAT(CONCAT('%', #{vo.examName}), '%')
+        </if>
+        ORDER BY es.end_time DESC
+    </select>
+
+
+    <select id="findByExamIdAndStatus" resultType="exam.common.vo.StuScoreVO">
+        SELECT e.id AS examId,
+        e.`name` AS examName,
+        u.id AS userId,
+        u.username,
+        u.real_name,
+        o.id AS orgId,
+        o.`name` AS orgName,
+        es.total_score AS score,
+        es.`status`
+        FROM exam e
+        JOIN exam_student es ON e.id = es.exam_id
+        JOIN `user` u ON u.id = es.stu_id
+        JOIN organization o ON o.id = u.org_id
+        WHERE e.id=#{examId} AND es.`status` in (
+        <foreach collection="status" item="s" separator=",">
+            #{s}
+        </foreach>
+        )
+    </select>
+
+    <select id="findStuIdByExamId" resultType="java.lang.Long">
+        SELECT es.stu_id
+        FROM exam_student es
+        WHERE es.exam_id = #{examId}
+    </select>
+</mapper>

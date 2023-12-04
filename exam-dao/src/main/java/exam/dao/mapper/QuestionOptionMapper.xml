@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.QuestionOptionMapper">
+
+    <sql id="columns">
+        op.id,op.question_id,op.serial_no,op.title,op.create_time,op.update_time,op.create_by,op.update_by
+    </sql>
+    <select id="findByCategoryIds" resultType="exam.dao.entity.QuestionOptionEntity">
+        select
+        <include refid="columns"/>
+        from question_option op
+        where EXISTS(select 1
+        from question q
+        WHERE op.question_id = q.id and (q.type=0 or q.type = 1) and q.question_category_id in
+        <foreach collection="categoryIds" item="categoryId" separator="," open="(" close=")">
+            #{categoryId}
+        </foreach>
+        )
+        order by op.serial_no
+    </select>
+
+</mapper>

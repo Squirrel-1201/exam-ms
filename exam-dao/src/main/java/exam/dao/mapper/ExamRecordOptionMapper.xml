@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.ExamRecordOptionMapper">
+
+    <sql id="columns">
+        o.id,o.exam_id,o.stu_id,o.exam_record_id,o.serial_no,o.title,o.create_time,o.update_time,o.create_by,o.update_by
+    </sql>
+    <insert id="batchSave">
+        insert into exam_record_option
+        (id,exam_id,stu_id,exam_record_id,serial_no,title,create_time,update_time,create_by,update_by)
+        values
+        <foreach collection="list" item="er" separator=",">
+            (#{er.id},#{er.examId},#{er.stuId},#{er.examRecordId},#{er.serialNo},#{er.title},#{er.createTime},#{er.updateTime},#{er.createBy},#{er.updateBy})
+        </foreach>
+    </insert>
+
+    <select id="findByExamIdAndStuId" resultType="exam.dao.entity.ExamRecordOptionEntity">
+        select
+        <include refid="columns"/>
+        from exam_record_option o join exam_record e on o.exam_record_id=e.id where e.stu_id=#{stuId} and e.exam_id=#{examId} order by o.serial_no
+    </select>
+</mapper>

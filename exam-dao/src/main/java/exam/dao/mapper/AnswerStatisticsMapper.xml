@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="exam.dao.mapper.AnswerStatisticsMapper">
+
+    <select id="selectByQustionId" resultType="java.lang.Integer">
+        select 1 from answer_statistics where question_id = #{questionId} limit 1
+    </select>
+
+    <update id="updateTotalAndFailByQustionId">
+        UPDATE answer_statistics ans set ans.error_count = ans.error_count + #{failCount},ans.total_count = ans.total_count + #{total} WHERE ans.question_id = #{questionId}
+    </update>
+
+    <select id="fallibleStatistics" resultType="exam.common.vo.FallibleStatisticsVO">
+        select
+            eqc.name AS name,
+            eq.id,
+            eq.title,
+            eq.`type`,
+            eq.difficulty,
+            eas.error_count,
+            eas.total_count
+        from answer_statistics eas
+        left join question eq on eas.question_id = eq.id
+        left join question_category eqc on eq.question_category_id = eqc.id
+        where eq.difficulty = #{code}
+        order by eas.error_count desc
+    </select>
+</mapper>

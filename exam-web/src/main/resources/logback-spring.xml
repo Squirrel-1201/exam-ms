@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration scan="true" scanPeriod="60 seconds">
+    <property name="FILE-PATH" value="logs"/>
+
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+    <springProperty scope="context" name="sysName" source="spring.application.sys-name"/>
+
+    <property name="PATTERN" value="${appName} %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{18} - %msg%n"/>
+
+    <!-- Console 输出设置 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder charset="UTF-8">
+            <pattern>${PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CUSTOM-APPENDER" class="ssm.common.log.CustomLogAppender">
+        <appName>${appName}</appName>
+        <sysName>${sysName}</sysName>
+    </appender>
+
+    <appender name="APPLICATION-FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${FILE-PATH}/${appName}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${FILE-PATH}/${appName}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <MaxHistory>10</MaxHistory>
+            <maxFileSize>5MB</maxFileSize>
+            <totalSizeCap>100MB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!--将上面的appender添加到root-->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="APPLICATION-FILE"/>
+    </root>
+    <logger name="exam" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="APPLICATION-FILE"/>
+    </logger>
+
+    <logger name="org.springframework" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="APPLICATION-FILE"/>
+    </logger>
+
+    <logger name="exam.dao.mapper" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="APPLICATION-FILE"/>
+    </logger>
+
+    <logger name="ssm.common.log.oper" level="info" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="APPLICATION-FILE"/>
+        <appender-ref ref="CUSTOM-APPENDER"/>
+    </logger>
+
+    <logger name="ssm.common.log.biz" level="info" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="APPLICATION-FILE"/>
+        <appender-ref ref="CUSTOM-APPENDER"/>
+    </logger>
+
+    <logger name="ssm.common.log.login" level="info" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="APPLICATION-FILE"/>
+        <appender-ref ref="CUSTOM-APPENDER"/>
+    </logger>
+
+</configuration>
